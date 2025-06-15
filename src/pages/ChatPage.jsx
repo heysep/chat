@@ -8,7 +8,14 @@ const ChatPage = ({ user, onLogout }) => {
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
   const BASE_URL = "http://localhost:8080/api";
-  const [chatRoomIdx, setChatRoomIdx] = useState(8);
+  const [chatRoomIdx, setChatRoomIdx] = useState(() => {
+    const stored = localStorage.getItem("chatRoomIdx");
+    return stored ? Number(stored) : 1;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("chatRoomIdx", chatRoomIdx);
+  }, [chatRoomIdx]);
 
   // 메시지 조회 함수
   const fetchMessages = async () => {
@@ -136,7 +143,7 @@ const ChatPage = ({ user, onLogout }) => {
                 value={chatRoomIdx}
                 onChange={(e) => setChatRoomIdx(Number(e.target.value))}
               >
-                {[1,2,3,4,5].map((idx) => (
+                {Array.from({ length: 10 }, (_, i) => i + 1).map((idx) => (
                   <option key={idx} value={idx}>
                     방 {idx}
                   </option>
