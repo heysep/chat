@@ -1,12 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 // 로그인 화면
 const LoginPage = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({
     userId: "",
     userPw: "",
   });
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -57,7 +55,6 @@ const LoginPage = ({ onLoginSuccess }) => {
       // 로그인 성공 - 상위 컴포넌트에 사용자 정보 전달
       console.log("로그인 성공:", data);
       onLoginSuccess(data.data);
-      navigate("/chat");
     } catch (err) {
       console.error("로그인 실패:", err);
       setError(err.message || "로그인에 실패했습니다.");
