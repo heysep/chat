@@ -8,10 +8,11 @@ const ChatPage = ({ user, onLogout }) => {
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
   const BASE_URL = "http://localhost:8080/api";
-  const [chatRoomIdx, setChatRoomIdx] = useState(8);
+  const [chatRoomIdx, setChatRoomIdx] = useState(1);
 
   // 메시지 조회 함수
   const fetchMessages = async () => {
+    setLoading(true);
     try {
       const response = await fetch(`${BASE_URL}/chatmsg/${chatRoomIdx}`, {
         method: "GET",
@@ -47,6 +48,7 @@ const ChatPage = ({ user, onLogout }) => {
 
   // 초기 로드 및 5초마다 새로고침
   useEffect(() => {
+    setMessages([]);
     fetchMessages();
     const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
@@ -136,7 +138,7 @@ const ChatPage = ({ user, onLogout }) => {
                 value={chatRoomIdx}
                 onChange={(e) => setChatRoomIdx(Number(e.target.value))}
               >
-                {[1,2,3,4,5].map((idx) => (
+                {Array.from({ length: 20 }, (_, i) => i + 1).map((idx) => (
                   <option key={idx} value={idx}>
                     방 {idx}
                   </option>
