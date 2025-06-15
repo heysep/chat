@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import ChatPage from './pages/ChatPage';
 
@@ -8,28 +7,26 @@ function App() {
     const stored = localStorage.getItem('user');
     return stored ? JSON.parse(stored) : null;
   });
+  const [page, setPage] = useState(() => (user ? 'chat' : 'login'));
 
   const handleLogin = (userData) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
+    setPage('chat');
   };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    setPage('login');
   };
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<LoginPage onLoginSuccess={handleLogin} />} />
-        <Route
-          path="/chat"
-          element={user ? <ChatPage user={user} onLogout={handleLogout} /> : <Navigate to="/login" replace />}
-        />
-        <Route path="*" element={<Navigate to={user ? '/chat' : '/login'} replace />} />
-      </Routes>
-    </Router>
+    page === 'login' ? (
+      <LoginPage onLoginSuccess={handleLogin} />
+    ) : (
+      <ChatPage user={user} onLogout={handleLogout} />
+    )
   );
 }
 

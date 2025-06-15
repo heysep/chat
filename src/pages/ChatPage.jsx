@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 // 채팅방 컨텍스트
 const ChatPage = ({ user, onLogout }) => {
   const [messages, setMessages] = useState([]);
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
   const BASE_URL = "http://localhost:8080/api";
-  const CHATROOM_IDX = 8;
+  const [chatRoomIdx, setChatRoomIdx] = useState(1);
 
   // 메시지 조회 함수
   const fetchMessages = async () => {
+    setLoading(true);
     try {
-      const response = await fetch(`${BASE_URL}/chatmsg/${CHATROOM_IDX}`, {
+      const response = await fetch(`${BASE_URL}/chatmsg/${chatRoomIdx}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -49,10 +48,11 @@ const ChatPage = ({ user, onLogout }) => {
 
   // 초기 로드 및 5초마다 새로고침
   useEffect(() => {
+    setMessages([]);
     fetchMessages();
     const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [chatRoomIdx]);
 
   // 내 메시지인지 판별
   const isMyMessage = (message) => {
@@ -108,7 +108,6 @@ const ChatPage = ({ user, onLogout }) => {
       console.error("로그아웃 실패:", err);
     }
     onLogout();
-    navigate("/login");
   };
 
   if (loading) {
@@ -134,9 +133,18 @@ const ChatPage = ({ user, onLogout }) => {
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="text-xs text-gray-400">
-                채팅방 #{CHATROOM_IDX}
-              </div>
+              <select
+                className="text-xs border-gray-300 rounded px-2 py-1"
+                value={chatRoomIdx}
+                onChange={(e) => setChatRoomIdx(Number(e.target.value))}
+              >
+                {Array.from({ length: 20 }, (_, i) => i + 1).map((idx) => (
+                  <option key={idx} value={idx}>
+                    방 {idx}
+                  </option>
+                ))}
+              </select>
+              <div className="text-xs text-gray-400">채팅방 #{chatRoomIdx}</div>
               <button
                 onClick={handleLogout}
                 className="text-xs bg-red-50 text-red-600 px-3 py-1 rounded-full hover:bg-red-100 transition-colors"
