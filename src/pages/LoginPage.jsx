@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-
-const LoginScreen = () => {
+import { useNavigate } from "react-router-dom";
+// 로그인 화면
+const LoginPage = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({
     userId: "",
     userPw: "",
   });
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
 
   const BASE_URL = "http://localhost:8080/api";
 
@@ -53,14 +54,10 @@ const LoginScreen = () => {
         );
       }
 
-      // 로그인 성공
-      setSuccess(true);
+      // 로그인 성공 - 상위 컴포넌트에 사용자 정보 전달
       console.log("로그인 성공:", data);
-
-      // 실제 앱에서는 여기서 리다이렉트나 상태 관리
-      setTimeout(() => {
-        alert(`${data.data.company_name}님, 로그인되었습니다!`);
-      }, 500);
+      onLoginSuccess(data.data);
+      navigate("/chat");
     } catch (err) {
       console.error("로그인 실패:", err);
       setError(err.message || "로그인에 실패했습니다.");
@@ -108,7 +105,7 @@ const LoginScreen = () => {
                 onKeyPress={handleKeyPress}
                 placeholder="사용자 ID를 입력하세요"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
-                disabled={loading || success}
+                disabled={loading}
               />
             </div>
 
@@ -129,7 +126,7 @@ const LoginScreen = () => {
                 onKeyPress={handleKeyPress}
                 placeholder="비밀번호를 입력하세요"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
-                disabled={loading || success}
+                disabled={loading}
               />
             </div>
 
@@ -140,22 +137,13 @@ const LoginScreen = () => {
               </div>
             )}
 
-            {/* 성공 메시지 */}
-            {success && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-xl">
-                <p className="text-green-800 text-sm">
-                  로그인이 완료되었습니다!
-                </p>
-              </div>
-            )}
-
             {/* 로그인 버튼 */}
             <button
               type="button"
               onClick={handleLogin}
-              disabled={loading || success}
+              disabled={loading}
               className={`w-full py-3 px-4 rounded-xl font-medium text-sm transition-all duration-200 ${
-                loading || success
+                loading
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : "bg-blue-500 hover:bg-blue-600 text-white shadow-sm hover:shadow-md"
               }`}
@@ -165,8 +153,6 @@ const LoginScreen = () => {
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   <span>로그인 중...</span>
                 </div>
-              ) : success ? (
-                "로그인 완료"
               ) : (
                 "로그인"
               )}
@@ -191,15 +177,11 @@ const LoginScreen = () => {
           <div className="bg-white rounded-full shadow-sm px-4 py-2 inline-flex items-center space-x-2">
             <div
               className={`w-2 h-2 rounded-full ${
-                error ? "bg-red-400" : success ? "bg-green-400" : "bg-blue-400"
+                error ? "bg-red-400" : "bg-blue-400"
               } ${loading ? "animate-pulse" : ""}`}
             ></div>
             <span className="text-xs text-gray-600">
-              {error
-                ? "API 연결 실패"
-                : success
-                ? "API 연결 성공"
-                : "API 준비됨"}
+              {error ? "API 연결 실패" : "API 준비됨"}
             </span>
           </div>
         </div>
@@ -214,5 +196,4 @@ const LoginScreen = () => {
     </div>
   );
 };
-
-export default LoginScreen;
+export default LoginPage;
