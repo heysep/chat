@@ -59,7 +59,17 @@ const ChatPage = ({ user, onLogout }) => {
     return () => clearInterval(interval);
   }, [chatRoomIdx]);
 
-  // 내 메시지인지 판별
+  // idx가 큰 사람을 왼쪽(false), 작은 사람을 오른쪽(true)으로 배치
+  const isRightSide = (message) => {
+    // 모든 메시지의 senderUserIdx를 수집해서 최대값을 구함
+    const allUserIdxs = messages.map((msg) => msg.senderUserIdx);
+    const maxIdx = Math.max(...allUserIdxs);
+
+    // 현재 메시지의 senderUserIdx가 최대값보다 작으면 오른쪽(true)
+    return message.senderUserIdx < maxIdx;
+  };
+
+  // 내 메시지인지 판별 (기존 로직 유지 - 참고용)
   const isMyMessage = (message) => {
     return message.senderUserIdx === user.user_idx;
   };
@@ -170,6 +180,7 @@ const ChatPage = ({ user, onLogout }) => {
 
         <div className="space-y-4">
           {messages.map((message, index) => {
+            const isRight = isRightSide(message);
             const isMine = isMyMessage(message);
             const messageText = message.chatMsgContent || "";
             const senderName = message.senderName;
@@ -189,22 +200,24 @@ const ChatPage = ({ user, onLogout }) => {
                 )}
 
                 <div
-                  className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+                  className={`flex ${
+                    isRight ? "justify-end" : "justify-start"
+                  }`}
                 >
                   <div
                     className={`flex flex-col max-w-xs lg:max-w-md ${
-                      isMine ? "items-end" : "items-start"
+                      isRight ? "items-end" : "items-start"
                     }`}
                   >
-                    {!isMine && (
+                    {!isRight && (
                       <div className="text-xs text-gray-500 mb-1 px-2">
-                        {senderName}
+                        {senderName} (idx: {message.senderUserIdx})
                       </div>
                     )}
 
                     <div
                       className={`px-4 py-3 rounded-2xl shadow-sm ${
-                        isMine
+                        isRight
                           ? "bg-blue-500 text-white rounded-br-md"
                           : "bg-white text-gray-900 border border-gray-200 rounded-bl-md"
                       }`}
@@ -216,10 +229,15 @@ const ChatPage = ({ user, onLogout }) => {
 
                     <div
                       className={`text-xs text-gray-400 mt-1 px-2 ${
-                        isMine ? "text-right" : "text-left"
+                        isRight ? "text-right" : "text-left"
                       }`}
                     >
                       {formatTime(message.chatSendDate)}
+                      {isRight && (
+                        <div className="text-xs text-gray-400">
+                          idx: {message.senderUserIdx}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
