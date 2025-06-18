@@ -184,7 +184,9 @@ const ChatPage = ({ user, onLogout }) => {
 
       const normalizeProduct = (p) => {
         const idx = p.seller_user_idx ?? p.sellerUserIdx ?? p.userIdx;
-        const found = users.find((u) => u.user_idx === idx || u.userIdx === idx);
+        const found = users.find(
+          (u) => u.user_idx === idx || u.userIdx === idx
+        );
         return {
           productIdx: p.product_idx ?? p.productIdx,
           createdAt: p.created_at ?? p.createdAt,
@@ -246,7 +248,7 @@ const ChatPage = ({ user, onLogout }) => {
 
     setRegistering(true);
     try {
-      const response = await fetch(`${BASE_URL}/products/register/session`, {
+      const response = await fetch(`${BASE_URL}/products/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -329,10 +331,9 @@ const ChatPage = ({ user, onLogout }) => {
   };
 
   const getSellerName = (product) => {
-    const idx = product.sellerUserIdx || product.seller_user_idx || product.userIdx;
-    const found = users.find(
-      (u) => u.user_idx === idx || u.userIdx === idx
-    );
+    const idx =
+      product.sellerUserIdx || product.seller_user_idx || product.userIdx;
+    const found = users.find((u) => u.user_idx === idx || u.userIdx === idx);
     return (
       found?.user_name ||
       found?.userName ||
@@ -415,7 +416,9 @@ const ChatPage = ({ user, onLogout }) => {
     }
 
     const found = products.find((p) =>
-      (p.productDesc || p.title || p.productName || "").toLowerCase().includes(query)
+      (p.productDesc || p.title || p.productName || "")
+        .toLowerCase()
+        .includes(query)
     );
     setSearchResult(found || null);
   };
@@ -653,7 +656,9 @@ const ChatPage = ({ user, onLogout }) => {
               {searchResult && (
                 <div className="mb-4 p-4 bg-white border border-blue-200 rounded-xl shadow-sm">
                   <h3 className="font-semibold text-gray-900">
-                    {searchResult.productDesc || searchResult.title || searchResult.productName}
+                    {searchResult.productDesc ||
+                      searchResult.title ||
+                      searchResult.productName}
                   </h3>
                   {searchResult.price && (
                     <p className="text-sm text-gray-500 mt-1">
@@ -682,8 +687,13 @@ const ChatPage = ({ user, onLogout }) => {
                         {product.productDesc || "제목 없음"}
                       </h3>
                       {product.productStatus && (
-                        <span className={`text-xs font-medium ${statusMap[product.productStatus]?.className || ""}`}> 
-                          {statusMap[product.productStatus]?.label || product.productStatus}
+                        <span
+                          className={`text-xs font-medium ${
+                            statusMap[product.productStatus]?.className || ""
+                          }`}
+                        >
+                          {statusMap[product.productStatus]?.label ||
+                            product.productStatus}
                         </span>
                       )}
                     </div>
@@ -713,7 +723,7 @@ const ChatPage = ({ user, onLogout }) => {
                   </div>
                 ))}
               </div>
-          </>
+            </>
           )}
           {products.length === 0 && !prodLoading && !prodError && (
             <div className="text-center py-12 text-gray-500">
@@ -927,7 +937,10 @@ const ChatPage = ({ user, onLogout }) => {
                     className="h-4 w-4 text-blue-600 border-gray-300 rounded"
                     disabled={registering}
                   />
-                  <label htmlFor="sellingAvailable" className="ml-2 text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="sellingAvailable"
+                    className="ml-2 text-sm font-medium text-gray-700"
+                  >
                     판매 가능 여부
                   </label>
                 </div>
@@ -973,7 +986,11 @@ const ChatPage = ({ user, onLogout }) => {
               <div className="space-y-4">
                 <div className="w-full h-40 bg-gray-100 flex items-center justify-center rounded-md">
                   {selectedProduct.productImg ? (
-                    <img src={selectedProduct.productImg} alt="" className="max-h-full" />
+                    <img
+                      src={selectedProduct.productImg}
+                      alt=""
+                      className="max-h-full"
+                    />
                   ) : (
                     <div className="text-4xl">📦</div>
                   )}
@@ -986,7 +1003,8 @@ const ChatPage = ({ user, onLogout }) => {
                   <div>수량: {selectedProduct.productQuantity}</div>
                   <div>판매자: {getSellerName(selectedProduct)}</div>
                   <div>
-                    판매 가능: {selectedProduct.isSellingAvailable ? "가능" : "불가"}
+                    판매 가능:{" "}
+                    {selectedProduct.isSellingAvailable ? "가능" : "불가"}
                   </div>
                 </div>
                 {selectedProduct.productDesc && (
@@ -1007,9 +1025,13 @@ const ChatPage = ({ user, onLogout }) => {
                   </div>
                 )}
                 <div className="text-xs text-gray-500 space-y-1 border-t pt-2 mt-2">
-                  <div>상품 ID: {selectedProduct.productIdx || selectedProduct.id}</div>
                   <div>
-                    판매자 ID: {selectedProduct.seller_user_idx || selectedProduct.sellerUserIdx}
+                    상품 ID: {selectedProduct.productIdx || selectedProduct.id}
+                  </div>
+                  <div>
+                    판매자 ID:{" "}
+                    {selectedProduct.seller_user_idx ||
+                      selectedProduct.sellerUserIdx}
                   </div>
                 </div>
               </div>
