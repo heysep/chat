@@ -5,6 +5,12 @@ const RegisterPage = ({ onRegisterSuccess, onNavigateToLogin }) => {
     companyName: "",
     userId: "",
     userPw: "",
+    userName: "",
+    businessNum: "",
+    startDate: "",
+    companyAddress: "",
+    companyIndustry: "",
+    companyTell: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -24,7 +30,13 @@ const RegisterPage = ({ onRegisterSuccess, onNavigateToLogin }) => {
     if (
       !formData.companyName.trim() ||
       !formData.userId.trim() ||
-      !formData.userPw.trim()
+      !formData.userPw.trim() ||
+      !formData.userName.trim() ||
+      !formData.businessNum.trim() ||
+      !formData.startDate.trim() ||
+      !formData.companyAddress.trim() ||
+      !formData.companyIndustry.trim() ||
+      !formData.companyTell.trim()
     ) {
       setError("모든 필드를 입력해주세요.");
       return;
@@ -44,6 +56,13 @@ const RegisterPage = ({ onRegisterSuccess, onNavigateToLogin }) => {
           companyName: formData.companyName,
           userId: formData.userId,
           userPw: formData.userPw,
+          userName: formData.userName,
+          businessNum: formData.businessNum,
+          startDate: formData.startDate,
+          companyAddress: formData.companyAddress,
+          companyIndustry: formData.companyIndustry,
+          companyTell: formData.companyTell,
+          joinApproved: false,
         }),
       });
 
@@ -125,6 +144,108 @@ const RegisterPage = ({ onRegisterSuccess, onNavigateToLogin }) => {
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
                 placeholder="비밀번호를 입력하세요"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="userName" className="block text-sm font-medium text-gray-700 mb-2">
+                사용자 이름
+              </label>
+              <input
+                type="text"
+                id="userName"
+                name="userName"
+                value={formData.userName}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder="사용자 이름을 입력하세요"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="businessNum" className="block text-sm font-medium text-gray-700 mb-2">
+                사업자번호
+              </label>
+              <input
+                type="text"
+                id="businessNum"
+                name="businessNum"
+                value={formData.businessNum}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder="사업자번호를 입력하세요"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
+                시작일
+              </label>
+              <input
+                type="text"
+                id="startDate"
+                name="startDate"
+                value={formData.startDate}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder="YYYYMMDD"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="companyAddress" className="block text-sm font-medium text-gray-700 mb-2">
+                회사 주소
+              </label>
+              <input
+                type="text"
+                id="companyAddress"
+                name="companyAddress"
+                value={formData.companyAddress}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder="회사 주소를 입력하세요"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="companyIndustry" className="block text-sm font-medium text-gray-700 mb-2">
+                업종
+              </label>
+              <input
+                type="text"
+                id="companyIndustry"
+                name="companyIndustry"
+                value={formData.companyIndustry}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder="업종을 입력하세요"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="companyTell" className="block text-sm font-medium text-gray-700 mb-2">
+                전화번호
+              </label>
+              <input
+                type="text"
+                id="companyTell"
+                name="companyTell"
+                value={formData.companyTell}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder="전화번호를 입력하세요"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                 disabled={loading}
               />
