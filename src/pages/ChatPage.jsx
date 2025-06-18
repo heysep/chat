@@ -181,17 +181,32 @@ const ChatPage = ({ user, onLogout }) => {
         : Array.isArray(data.data)
         ? data.data
         : [];
-      const mapped = list.map((p) => {
-        const idx = p.sellerUserIdx || p.seller_user_idx || p.userIdx;
-        const found = users.find(
-          (u) => u.user_idx === idx || u.userIdx === idx
-        );
+
+      const normalizeProduct = (p) => {
+        const idx = p.seller_user_idx ?? p.sellerUserIdx ?? p.userIdx;
+        const found = users.find((u) => u.user_idx === idx || u.userIdx === idx);
         return {
-          ...p,
+          productIdx: p.product_idx ?? p.productIdx,
+          createdAt: p.created_at ?? p.createdAt,
+          featured: p.featured,
+          productAvailDate: p.product_avail_date ?? p.productAvailDate,
+          category: p.product_category ?? p.category,
+          productDesc: p.product_desc ?? p.productDesc,
+          productImg: p.product_image ?? p.productImg,
+          price: p.product_price ?? p.productPrice ?? p.price,
+          productQuantity: p.product_quantity ?? p.productQuantity,
+          productStatus: p.product_status ?? p.productStatus,
+          tags: p.product_tags ?? p.tags,
+          productTitle: p.product_title ?? p.productTitle,
+          viewCount: p.view_count ?? p.viewCount,
+          sellerUserIdx: idx,
+          isSellingAvailable: p.is_selling_available ?? p.isSellingAvailable,
           sellerUserName:
             found?.user_name || found?.userName || found?.company_name,
         };
-      });
+      };
+
+      const mapped = list.map(normalizeProduct);
 
       setProducts(mapped);
       setProdError(null);
@@ -230,9 +245,15 @@ const ChatPage = ({ user, onLogout }) => {
         },
         credentials: "include",
         body: JSON.stringify({
-          ...productForm,
-          productPrice: Number(productForm.productPrice),
-          productQuantity: Number(productForm.productQuantity),
+          product_title: productForm.productTitle,
+          product_desc: productForm.productDesc,
+          product_image: productForm.productImg,
+          product_price: Number(productForm.productPrice),
+          product_quantity: Number(productForm.productQuantity),
+          product_status: productForm.productStatus,
+          product_category: productForm.category,
+          product_tags: productForm.tags,
+          is_selling_available: productForm.isSellingAvailable,
           seller_user_idx: user.user_idx,
         }),
       });
