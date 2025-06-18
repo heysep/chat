@@ -300,10 +300,14 @@ const ChatPage = ({ user, onLogout }) => {
   };
 
   const handleProductSearch = () => {
-    const found = products.find(
-      (p) =>
-        (p.title || p.productName || "").toLowerCase() ===
-        searchTitle.trim().toLowerCase()
+    const query = searchTitle.trim().toLowerCase();
+    if (!query) {
+      setSearchResult(null);
+      return;
+    }
+
+    const found = products.find((p) =>
+      (p.title || p.productName || "").toLowerCase().includes(query)
     );
     setSearchResult(found || null);
   };
