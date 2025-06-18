@@ -24,6 +24,9 @@ const ChatPage = ({ user, onLogout }) => {
   const [prodLoading, setProdLoading] = useState(false);
   const [prodError, setProdError] = useState(null);
 
+  const [searchTitle, setSearchTitle] = useState("");
+  const [searchResult, setSearchResult] = useState(null);
+
   // 상품 등록 폼 상태
   const [productForm, setProductForm] = useState({
     productTitle: "",
@@ -296,6 +299,15 @@ const ChatPage = ({ user, onLogout }) => {
     return currentDate.toDateString() !== previousDate.toDateString();
   };
 
+  const handleProductSearch = () => {
+    const found = products.find(
+      (p) =>
+        (p.title || p.productName || "").toLowerCase() ===
+        searchTitle.trim().toLowerCase()
+    );
+    setSearchResult(found || null);
+  };
+
   // 로그아웃 처리
   const handleLogout = async () => {
     try {
@@ -502,12 +514,45 @@ const ChatPage = ({ user, onLogout }) => {
               목록을 불러오는 중...
             </div>
           ) : (
-            <div className="space-y-4">
-              {products.map((product) => (
-                <div
-                  key={product.productIdx || product.id}
-                  className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
+            <>
+              <div className="mb-4 flex space-x-2">
+                <input
+                  type="text"
+                  value={searchTitle}
+                  onChange={(e) => setSearchTitle(e.target.value)}
+                  className="flex-1 px-4 py-2 border rounded-md text-sm"
+                  placeholder="상품명 검색"
+                />
+                <button
+                  onClick={handleProductSearch}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md text-sm"
                 >
+                  검색
+                </button>
+              </div>
+              {searchResult && (
+                <div className="mb-4 p-4 bg-white border border-blue-200 rounded-xl shadow-sm">
+                  <h3 className="font-semibold text-gray-900">
+                    {searchResult.title || searchResult.productName}
+                  </h3>
+                  {searchResult.price && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      가격: {searchResult.price}
+                    </p>
+                  )}
+                  {searchResult.content && (
+                    <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">
+                      {searchResult.content}
+                    </p>
+                  )}
+                </div>
+              )}
+              <div className="space-y-4">
+                {products.map((product) => (
+                  <div
+                    key={product.productIdx || product.id}
+                    className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
+                  >
                   <h3 className="font-semibold text-gray-900">
                     {product.title || product.productName || "제목 없음"}
                   </h3>
