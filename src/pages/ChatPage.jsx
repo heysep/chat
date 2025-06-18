@@ -646,6 +646,7 @@ const ChatPage = ({ user, onLogout }) => {
                 </div>
               ))}
             </div>
+          </>
           )}
           {products.length === 0 && !prodLoading && !prodError && (
             <div className="text-center py-12 text-gray-500">
