@@ -52,7 +52,10 @@ const ChatPage = ({ user, onLogout }) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
         },
+        cache: "no-store",
         credentials: "include", // 세션 유지
       });
 
