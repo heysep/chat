@@ -46,6 +46,11 @@ const ChatPage = ({ user, onLogout }) => {
   }, [chatRoomIdx]);
 
   // 메시지 조회 함수
+  const handleUnauthorized = () => {
+    alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+    onLogout();
+  };
+
   const fetchMessages = async () => {
     try {
       const response = await fetch(`${BASE_URL}/chatmsg/${chatRoomIdx}`, {
@@ -58,6 +63,11 @@ const ChatPage = ({ user, onLogout }) => {
         cache: "no-store",
         credentials: "include", // 세션 유지
       });
+
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -112,6 +122,11 @@ const ChatPage = ({ user, onLogout }) => {
         },
         credentials: "include",
       });
+
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -170,6 +185,11 @@ const ChatPage = ({ user, onLogout }) => {
           seller_user_idx: user.user_idx,
         }),
       });
+
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
