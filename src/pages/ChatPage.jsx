@@ -246,6 +246,14 @@ const ChatPage = ({ user, onLogout }) => {
       return;
     }
 
+    if (
+      productForm.productQuantity === "" ||
+      isNaN(Number(productForm.productQuantity))
+    ) {
+      alert("수량을 올바르게 입력하세요.");
+      return;
+    }
+
     setRegistering(true);
     try {
       const response = await fetch(`${BASE_URL}/products/register`, {
