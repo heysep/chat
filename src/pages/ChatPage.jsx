@@ -259,6 +259,7 @@ const ChatPage = ({ user, onLogout }) => {
           product_price: Number(productForm.productPrice),
           productPrice: Number(productForm.productPrice),
           product_quantity: Number(productForm.productQuantity),
+          productQuantity: Number(productForm.productQuantity),
           product_status: productForm.productStatus,
           product_category: productForm.category,
           product_tags: productForm.tags,
