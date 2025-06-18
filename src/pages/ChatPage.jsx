@@ -236,6 +236,14 @@ const ChatPage = ({ user, onLogout }) => {
       return;
     }
 
+    if (
+      productForm.productPrice === "" ||
+      isNaN(Number(productForm.productPrice))
+    ) {
+      alert("가격을 올바르게 입력하세요.");
+      return;
+    }
+
     setRegistering(true);
     try {
       const response = await fetch(`${BASE_URL}/products/register/session`, {
@@ -249,6 +257,7 @@ const ChatPage = ({ user, onLogout }) => {
           product_desc: productForm.productDesc,
           product_image: productForm.productImg,
           product_price: Number(productForm.productPrice),
+          productPrice: Number(productForm.productPrice),
           product_quantity: Number(productForm.productQuantity),
           product_status: productForm.productStatus,
           product_category: productForm.category,
