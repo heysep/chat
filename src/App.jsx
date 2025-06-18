@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import ChatPage from './pages/ChatPage';
 
 function App() {
@@ -21,9 +22,21 @@ function App() {
     setPage('login');
   };
 
+  const handleRegisterSuccess = () => {
+    setPage('login');
+  };
+
   return (
     page === 'login' ? (
-      <LoginPage onLoginSuccess={handleLogin} />
+      <LoginPage
+        onLoginSuccess={handleLogin}
+        onNavigateToRegister={() => setPage('register')}
+      />
+    ) : page === 'register' ? (
+      <RegisterPage
+        onRegisterSuccess={handleRegisterSuccess}
+        onNavigateToLogin={() => setPage('login')}
+      />
     ) : (
       <ChatPage user={user} onLogout={handleLogout} />
     )
