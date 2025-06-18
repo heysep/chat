@@ -30,6 +30,10 @@ const ChatPage = ({ user, onLogout }) => {
   const [searchTitle, setSearchTitle] = useState("");
   const [searchResult, setSearchResult] = useState(null);
 
+  // 상품 상세 모달 상태
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
   // 상품 등록 폼 상태
   const [productForm, setProductForm] = useState({
     productTitle: "",
@@ -363,6 +367,16 @@ const ChatPage = ({ user, onLogout }) => {
     return currentDate.toDateString() !== previousDate.toDateString();
   };
 
+  // 가격 포맷팅
+  const formatPrice = (price) =>
+    typeof price === "number" ? `${price.toLocaleString()}원` : "";
+
+  const statusMap = {
+    AVAILABLE: { label: "판매중", className: "text-green-600" },
+    SOLD_OUT: { label: "품절", className: "text-red-600" },
+    DISCONTINUED: { label: "단종", className: "text-gray-500" },
+  };
+
   const handleProductSearch = () => {
     const query = searchTitle.trim().toLowerCase();
     if (!query) {
@@ -374,6 +388,11 @@ const ChatPage = ({ user, onLogout }) => {
       (p.productDesc || p.title || p.productName || "").toLowerCase().includes(query)
     );
     setSearchResult(found || null);
+  };
+
+  const handleProductClick = (product) => {
+    setSelectedProduct(product);
+    setShowProductModal(true);
   };
 
   // 로그아웃 처리
@@ -625,27 +644,45 @@ const ChatPage = ({ user, onLogout }) => {
                 {products.map((product) => (
                   <div
                     key={product.productIdx || product.id}
-                    className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
+                    className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => handleProductClick(product)}
                   >
-                  <h3 className="font-semibold text-gray-900">
-                    {product.productDesc || "제목 없음"}
-                  </h3>
-                  {product.price && (
-                    <p className="text-sm text-gray-500 mt-1">
-                      가격: {product.price}
-                    </p>
-                  )}
-                  <p className="text-sm text-gray-500 mt-1">
-                    판매자: {getSellerName(product)}
-                  </p>
-                  {product.content && (
-                    <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">
-                      {product.content}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
+                    <div className="flex items-center mb-2">
+                      <h3 className="font-semibold text-gray-900 flex-1">
+                        {product.productDesc || "제목 없음"}
+                      </h3>
+                      {product.productStatus && (
+                        <span className={`text-xs font-medium ${statusMap[product.productStatus]?.className || ""}`}> 
+                          {statusMap[product.productStatus]?.label || product.productStatus}
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-sm text-gray-600">
+                      <div>가격: {formatPrice(product.price)}</div>
+                      <div>수량: {product.productQuantity}</div>
+                      <div>카테고리: {product.category}</div>
+                    </div>
+                    {product.tags && product.tags.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {product.tags.map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {product.content && (
+                      <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">
+                        {product.content}
+                      </p>
+                    )}
+                    <p className="text-sm text-blue-600 mt-3">자세히 보기 →</p>
+                  </div>
+                ))}
+              </div>
           </>
           )}
           {products.length === 0 && !prodLoading && !prodError && (
@@ -881,6 +918,70 @@ const ChatPage = ({ user, onLogout }) => {
                 >
                   {registering ? "등록 중..." : "등록"}
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 상품 상세 모달 */}
+      {showProductModal && selectedProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {selectedProduct.productDesc || "상세 정보"}
+                </h2>
+                <button
+                  onClick={() => setShowProductModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div className="w-full h-40 bg-gray-100 flex items-center justify-center rounded-md">
+                  {selectedProduct.productImg ? (
+                    <img src={selectedProduct.productImg} alt="" className="max-h-full" />
+                  ) : (
+                    <div className="text-4xl">📦</div>
+                  )}
+                </div>
+                <p className="text-2xl font-bold text-blue-600">
+                  {formatPrice(selectedProduct.price)}
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
+                  <div>카테고리: {selectedProduct.category}</div>
+                  <div>수량: {selectedProduct.productQuantity}</div>
+                  <div>판매자: {getSellerName(selectedProduct)}</div>
+                  <div>
+                    판매 가능: {selectedProduct.isSellingAvailable ? "가능" : "불가"}
+                  </div>
+                </div>
+                {selectedProduct.productDesc && (
+                  <p className="text-sm text-gray-800 whitespace-pre-wrap">
+                    {selectedProduct.productDesc}
+                  </p>
+                )}
+                {selectedProduct.tags && selectedProduct.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProduct.tags.map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div className="text-xs text-gray-500 space-y-1 border-t pt-2 mt-2">
+                  <div>상품 ID: {selectedProduct.productIdx || selectedProduct.id}</div>
+                  <div>
+                    판매자 ID: {selectedProduct.seller_user_idx || selectedProduct.sellerUserIdx}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
