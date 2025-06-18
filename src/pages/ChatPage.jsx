@@ -506,7 +506,7 @@ const ChatPage = ({ user, onLogout }) => {
       {/* 상품 등록 모달 */}
       {showRegisterModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">
@@ -521,9 +521,9 @@ const ChatPage = ({ user, onLogout }) => {
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     상품명 *
                   </label>
                   <input
@@ -535,14 +535,14 @@ const ChatPage = ({ user, onLogout }) => {
                         productTitle: e.target.value,
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                     placeholder="상품명을 입력하세요"
                     disabled={registering}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     상품 설명 *
                   </label>
                   <textarea
@@ -553,15 +553,33 @@ const ChatPage = ({ user, onLogout }) => {
                         productDesc: e.target.value,
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                     placeholder="상품 설명을 입력하세요"
                     rows={3}
                     disabled={registering}
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    상품 이미지
+                  </label>
+                  <input
+                    type="text"
+                    value={productForm.productImg}
+                    onChange={(e) =>
+                      setProductForm((prev) => ({
+                        ...prev,
+                        productImg: e.target.value,
+                      }))
+                    }
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                    placeholder="이미지 파일명을 입력하세요"
+                    disabled={registering}
+                  />
+                </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     가격
                   </label>
                   <input
@@ -573,14 +591,14 @@ const ChatPage = ({ user, onLogout }) => {
                         productPrice: e.target.value,
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                     placeholder="가격을 입력하세요"
                     disabled={registering}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     카테고리 *
                   </label>
                   <select
@@ -591,7 +609,7 @@ const ChatPage = ({ user, onLogout }) => {
                         category: e.target.value,
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                     disabled={registering}
                   >
                     <option value="">카테고리를 선택하세요</option>
@@ -604,7 +622,7 @@ const ChatPage = ({ user, onLogout }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     수량
                   </label>
                   <input
@@ -616,20 +634,20 @@ const ChatPage = ({ user, onLogout }) => {
                         productQuantity: e.target.value,
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                     min="1"
                     disabled={registering}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     태그
                   </label>
                   <input
                     type="text"
                     onKeyDown={handleTagInput}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                     placeholder="태그를 입력하고 Enter를 누르세요"
                     disabled={registering}
                   />
@@ -656,7 +674,7 @@ const ChatPage = ({ user, onLogout }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     상품 상태
                   </label>
                   <select
@@ -667,13 +685,31 @@ const ChatPage = ({ user, onLogout }) => {
                         productStatus: e.target.value,
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                     disabled={registering}
                   >
                     <option value="AVAILABLE">판매중</option>
                     <option value="SOLD_OUT">품절</option>
                     <option value="DISCONTINUED">단종</option>
                   </select>
+                </div>
+                <div className="flex items-center mt-2">
+                  <input
+                    id="sellingAvailable"
+                    type="checkbox"
+                    checked={productForm.isSellingAvailable}
+                    onChange={(e) =>
+                      setProductForm((prev) => ({
+                        ...prev,
+                        isSellingAvailable: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                    disabled={registering}
+                  />
+                  <label htmlFor="sellingAvailable" className="ml-2 text-sm font-medium text-gray-700">
+                    판매 가능 여부
+                  </label>
                 </div>
               </div>
 
