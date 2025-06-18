@@ -5,7 +5,17 @@ const ChatPage = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState("chat");
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-  const [messages, setMessages] = useState([]);
+  const initialChatRoomIdx = (() => {
+    const stored = localStorage.getItem("chatRoomIdx");
+    return stored ? Number(stored) : 1;
+  })();
+
+  const [chatRoomIdx, setChatRoomIdx] = useState(initialChatRoomIdx);
+
+  const [messages, setMessages] = useState(() => {
+    const stored = localStorage.getItem(`messages_${initialChatRoomIdx}`);
+    return stored ? JSON.parse(stored) : [];
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(new Date());
@@ -30,10 +40,6 @@ const ChatPage = ({ user, onLogout }) => {
   const [registering, setRegistering] = useState(false);
 
   const BASE_URL = "http://localhost:8080/api";
-  const [chatRoomIdx, setChatRoomIdx] = useState(() => {
-    const stored = localStorage.getItem("chatRoomIdx");
-    return stored ? Number(stored) : 1;
-  });
 
   useEffect(() => {
     localStorage.setItem("chatRoomIdx", chatRoomIdx);
@@ -63,6 +69,10 @@ const ChatPage = ({ user, onLogout }) => {
       );
 
       setMessages(sortedMessages);
+      localStorage.setItem(
+        `messages_${chatRoomIdx}`,
+        JSON.stringify(sortedMessages)
+      );
       setError(null);
       setLastUpdate(new Date());
       console.log("받아온 메시지 데이터:", sortedMessages);
@@ -76,6 +86,13 @@ const ChatPage = ({ user, onLogout }) => {
 
   // 초기 로드 및 5초마다 새로고침
   useEffect(() => {
+    const stored = localStorage.getItem(`messages_${chatRoomIdx}`);
+    if (stored) {
+      setMessages(JSON.parse(stored));
+    } else {
+      setMessages([]);
+    }
+    setLoading(true);
     fetchMessages();
     const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
