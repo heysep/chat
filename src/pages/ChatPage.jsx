@@ -24,6 +24,9 @@ const ChatPage = ({ user, onLogout }) => {
   const [prodLoading, setProdLoading] = useState(false);
   const [prodError, setProdError] = useState(null);
 
+  const [users, setUsers] = useState([]);
+  const [userError, setUserError] = useState(null);
+
   const [searchTitle, setSearchTitle] = useState("");
   const [searchResult, setSearchResult] = useState(null);
 
@@ -47,6 +50,39 @@ const ChatPage = ({ user, onLogout }) => {
   useEffect(() => {
     localStorage.setItem("chatRoomIdx", chatRoomIdx);
   }, [chatRoomIdx]);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/users/list`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray(data.data)
+        ? data.data
+        : [];
+
+      setUsers(list);
+      setUserError(null);
+    } catch (err) {
+      console.error("사용자 목록 조회 실패:", err);
+      setUserError(err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   // 메시지 조회 함수
   const handleUnauthorized = () => {
@@ -141,8 +177,19 @@ const ChatPage = ({ user, onLogout }) => {
         : Array.isArray(data.data)
         ? data.data
         : [];
+      const mapped = list.map((p) => {
+        const idx = p.sellerUserIdx || p.seller_user_idx || p.userIdx;
+        const found = users.find(
+          (u) => u.user_idx === idx || u.userIdx === idx
+        );
+        return {
+          ...p,
+          sellerUserName:
+            found?.user_name || found?.userName || found?.company_name,
+        };
+      });
 
-      setProducts(list);
+      setProducts(mapped);
       setProdError(null);
     } catch (err) {
       console.error("상품 목록 조회 실패:", err);
@@ -154,6 +201,7 @@ const ChatPage = ({ user, onLogout }) => {
 
   useEffect(() => {
     if (activeTab === "products") {
+      fetchUsers();
       fetchProducts();
     }
   }, [activeTab]);
@@ -246,6 +294,22 @@ const ChatPage = ({ user, onLogout }) => {
     }));
   };
 
+  const getSellerName = (product) => {
+    const idx = product.sellerUserIdx || product.seller_user_idx || product.userIdx;
+    const found = users.find(
+      (u) => u.user_idx === idx || u.userIdx === idx
+    );
+    return (
+      found?.user_name ||
+      found?.userName ||
+      found?.company_name ||
+      product.sellerName ||
+      product.writerName ||
+      product.userName ||
+      ""
+    );
+  };
+
   // idx가 큰 사람을 왼쪽(false), 작은 사람을 오른쪽(true)으로 배치
   const isRightSide = (message) => {
     // 모든 메시지의 senderUserIdx를 수집해서 최대값을 구함
@@ -307,7 +371,7 @@ const ChatPage = ({ user, onLogout }) => {
     }
 
     const found = products.find((p) =>
-      (p.title || p.productName || "").toLowerCase().includes(query)
+      (p.productDesc || p.title || p.productName || "").toLowerCase().includes(query)
     );
     setSearchResult(found || null);
   };
@@ -336,6 +400,9 @@ const ChatPage = ({ user, onLogout }) => {
     );
   }
 
+  const welcomeName =
+    user.user_name || user.userName || user.company_name || "";
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="bg-white shadow-sm border-b sticky top-0 z-10">
@@ -346,7 +413,7 @@ const ChatPage = ({ user, onLogout }) => {
                 {activeTab === "chat" ? "채팅방" : "상품 게시글"}
               </h1>
               <p className="text-sm text-gray-500">
-                {user.company_name}님 환영합니다
+                {welcomeName}님 환영합니다
               </p>
               <div className="mt-2 space-x-2">
                 <button
@@ -537,13 +604,16 @@ const ChatPage = ({ user, onLogout }) => {
               {searchResult && (
                 <div className="mb-4 p-4 bg-white border border-blue-200 rounded-xl shadow-sm">
                   <h3 className="font-semibold text-gray-900">
-                    {searchResult.title || searchResult.productName}
+                    {searchResult.productDesc || searchResult.title || searchResult.productName}
                   </h3>
                   {searchResult.price && (
                     <p className="text-sm text-gray-500 mt-1">
                       가격: {searchResult.price}
                     </p>
                   )}
+                  <p className="text-sm text-gray-500 mt-1">
+                    판매자: {getSellerName(searchResult)}
+                  </p>
                   {searchResult.content && (
                     <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">
                       {searchResult.content}
@@ -558,7 +628,7 @@ const ChatPage = ({ user, onLogout }) => {
                     className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
                   >
                   <h3 className="font-semibold text-gray-900">
-                    {product.title || product.productName || "제목 없음"}
+                    {product.productDesc || "제목 없음"}
                   </h3>
                   {product.price && (
                     <p className="text-sm text-gray-500 mt-1">
@@ -566,10 +636,7 @@ const ChatPage = ({ user, onLogout }) => {
                     </p>
                   )}
                   <p className="text-sm text-gray-500 mt-1">
-                    판매자:{" "}
-                    {product.sellerName ||
-                      product.writerName ||
-                      product.userName}
+                    판매자: {getSellerName(product)}
                   </p>
                   {product.content && (
                     <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">
