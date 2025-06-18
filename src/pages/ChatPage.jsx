@@ -133,17 +133,13 @@ const ChatPage = ({ user, onLogout }) => {
       }
 
       const data = await response.json();
-      const list = Array.isArray(data) ? data : [];
-      const filtered = list.filter((item) => {
-        const owner =
-          item.sellerUserIdx ??
-          item.writerUserIdx ??
-          item.userIdx ??
-          item.user_idx;
-        return owner !== user.user_idx;
-      });
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray(data.data)
+        ? data.data
+        : [];
 
-      setProducts(filtered);
+      setProducts(list);
       setProdError(null);
     } catch (err) {
       console.error("상품 목록 조회 실패:", err);
