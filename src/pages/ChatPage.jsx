@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 // 채팅방 컨텍스트
 const ChatPage = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState("chat");
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,6 +13,21 @@ const ChatPage = ({ user, onLogout }) => {
   const [products, setProducts] = useState([]);
   const [prodLoading, setProdLoading] = useState(false);
   const [prodError, setProdError] = useState(null);
+
+  // 상품 등록 폼 상태
+  const [productForm, setProductForm] = useState({
+    productTitle: "",
+    productDesc: "",
+    productPrice: "",
+    productImg: "default.jpg",
+    productQuantity: 1,
+    productStatus: "AVAILABLE",
+    category: "",
+    tags: [],
+    isSellingAvailable: true,
+    seller_user_idx: user?.user_idx || 1,
+  });
+  const [registering, setRegistering] = useState(false);
 
   const BASE_URL = "http://localhost:8080/api";
   const [chatRoomIdx, setChatRoomIdx] = useState(() => {
@@ -66,47 +82,130 @@ const ChatPage = ({ user, onLogout }) => {
   }, [chatRoomIdx]);
 
   // 상품 게시글 조회
-  useEffect(() => {
-    if (activeTab !== "products") return;
+  const fetchProducts = async () => {
+    setProdLoading(true);
+    try {
+      const response = await fetch(`${BASE_URL}/products/list`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
 
-    const fetchProducts = async () => {
-      setProdLoading(true);
-      try {
-        const response = await fetch(`${BASE_URL}/products/list`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const list = Array.isArray(data) ? data : [];
-        const filtered = list.filter((item) => {
-          const owner =
-            item.sellerUserIdx ??
-            item.writerUserIdx ??
-            item.userIdx ??
-            item.user_idx;
-          return owner !== user.user_idx;
-        });
-
-        setProducts(filtered);
-        setProdError(null);
-      } catch (err) {
-        console.error("상품 목록 조회 실패:", err);
-        setProdError(err.message);
-      } finally {
-        setProdLoading(false);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
 
-    fetchProducts();
+      const data = await response.json();
+      const list = Array.isArray(data) ? data : [];
+      const filtered = list.filter((item) => {
+        const owner =
+          item.sellerUserIdx ??
+          item.writerUserIdx ??
+          item.userIdx ??
+          item.user_idx;
+        return owner !== user.user_idx;
+      });
+
+      setProducts(filtered);
+      setProdError(null);
+    } catch (err) {
+      console.error("상품 목록 조회 실패:", err);
+      setProdError(err.message);
+    } finally {
+      setProdLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "products") {
+      fetchProducts();
+    }
   }, [activeTab]);
+
+  // 상품 등록 함수
+  const handleProductRegister = async () => {
+    if (
+      !productForm.productTitle.trim() ||
+      !productForm.productDesc.trim() ||
+      !productForm.category.trim()
+    ) {
+      alert("제목, 설명, 카테고리는 필수 입력 항목입니다.");
+      return;
+    }
+
+    setRegistering(true);
+    try {
+      const response = await fetch(`${BASE_URL}/products/register/session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          ...productForm,
+          productPrice: Number(productForm.productPrice),
+          productQuantity: Number(productForm.productQuantity),
+          seller_user_idx: user.user_idx,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      alert("상품이 성공적으로 등록되었습니다!");
+      setShowRegisterModal(false);
+
+      // 폼 초기화
+      setProductForm({
+        productTitle: "",
+        productDesc: "",
+        productPrice: "",
+        productImg: "default.jpg",
+        productQuantity: 1,
+        productStatus: "AVAILABLE",
+        category: "",
+        tags: [],
+        isSellingAvailable: true,
+        seller_user_idx: user.user_idx,
+      });
+
+      // 상품 목록 새로고침
+      if (activeTab === "products") {
+        fetchProducts();
+      }
+    } catch (err) {
+      console.error("상품 등록 실패:", err);
+      alert(`상품 등록에 실패했습니다: ${err.message}`);
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  // 태그 입력 처리
+  const handleTagInput = (e) => {
+    if (e.key === "Enter" && e.target.value.trim()) {
+      e.preventDefault();
+      const newTag = e.target.value.trim();
+      if (!productForm.tags.includes(newTag)) {
+        setProductForm((prev) => ({
+          ...prev,
+          tags: [...prev.tags, newTag],
+        }));
+      }
+      e.target.value = "";
+    }
+  };
+
+  // 태그 제거
+  const removeTag = (tagToRemove) => {
+    setProductForm((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
+    }));
+  };
 
   // idx가 큰 사람을 왼쪽(false), 작은 사람을 오른쪽(true)으로 배치
   const isRightSide = (message) => {
@@ -194,17 +293,27 @@ const ChatPage = ({ user, onLogout }) => {
               <h1 className="text-lg font-semibold text-gray-900">
                 {activeTab === "chat" ? "채팅방" : "상품 게시글"}
               </h1>
-              <p className="text-sm text-gray-500">{user.company_name}님 환영합니다</p>
+              <p className="text-sm text-gray-500">
+                {user.company_name}님 환영합니다
+              </p>
               <div className="mt-2 space-x-2">
                 <button
                   onClick={() => setActiveTab("chat")}
-                  className={`text-xs px-3 py-1 rounded-full ${activeTab === "chat" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"}`}
+                  className={`text-xs px-3 py-1 rounded-full ${
+                    activeTab === "chat"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
                 >
                   채팅
                 </button>
                 <button
                   onClick={() => setActiveTab("products")}
-                  className={`text-xs px-3 py-1 rounded-full ${activeTab === "products" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"}`}
+                  className={`text-xs px-3 py-1 rounded-full ${
+                    activeTab === "products"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
                 >
                   상품 게시글
                 </button>
@@ -224,15 +333,17 @@ const ChatPage = ({ user, onLogout }) => {
                       </option>
                     ))}
                   </select>
-                  <div className="text-xs text-gray-400">채팅방 #{chatRoomIdx}</div>
+                  <div className="text-xs text-gray-400">
+                    채팅방 #{chatRoomIdx}
+                  </div>
                 </>
               ) : (
-                <a
-                  href={`${BASE_URL}/products/register/session`}
+                <button
+                  onClick={() => setShowRegisterModal(true)}
                   className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors"
                 >
                   새 상품 등록
-                </a>
+                </button>
               )}
               <button
                 onClick={handleLogout}
@@ -259,7 +370,10 @@ const ChatPage = ({ user, onLogout }) => {
                 const isRight = isRightSide(message);
                 const messageText = message.chatMsgContent || "";
                 const senderName = message.senderName;
-                const showDateSeparator = needsDateSeparator(message, messages[index - 1]);
+                const showDateSeparator = needsDateSeparator(
+                  message,
+                  messages[index - 1]
+                );
 
                 return (
                   <div key={`${message.chatMsgIdx}-${index}`}>
@@ -271,19 +385,46 @@ const ChatPage = ({ user, onLogout }) => {
                       </div>
                     )}
 
-                    <div className={`flex ${isRight ? "justify-end" : "justify-start"}`}>
-                      <div className={`flex flex-col max-w-xs lg:max-w-md ${isRight ? "items-end" : "items-start"}`}>
+                    <div
+                      className={`flex ${
+                        isRight ? "justify-end" : "justify-start"
+                      }`}
+                    >
+                      <div
+                        className={`flex flex-col max-w-xs lg:max-w-md ${
+                          isRight ? "items-end" : "items-start"
+                        }`}
+                      >
                         {!isRight && (
                           <div className="text-xs text-gray-500 mb-1 px-2">
                             {senderName} (idx: {message.senderUserIdx})
                           </div>
                         )}
 
-                        <div className={`px-4 py-3 rounded-2xl shadow-sm ${isRight ? "bg-blue-500 text-white rounded-br-md" : "bg-white text-gray-900 border border-gray-200 rounded-bl-md"}`}>
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap">{messageText}</p>
+                        <div
+                          className={`px-4 py-3 rounded-2xl shadow-sm ${
+                            isRight
+                              ? "bg-blue-500 text-white rounded-br-md"
+                              : "bg-white text-gray-900 border border-gray-200 rounded-bl-md"
+                          }`}
+                        >
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                            {messageText}
+                          </p>
                         </div>
 
-                        <div className={`text-xs text-gray-400 mt-1 px-2 ${isRight ? "text-right" : "text-left"}`}>{formatTime(message.chatSendDate)}{isRight && (<div className="text-xs text-gray-400">idx: {message.senderUserIdx}</div>)}</div>
+                        <div
+                          className={`text-xs text-gray-400 mt-1 px-2 ${
+                            isRight ? "text-right" : "text-left"
+                          }`}
+                        >
+                          {formatTime(message.chatSendDate)}
+                          {isRight && (
+                            <div className="text-xs text-gray-400">
+                              idx: {message.senderUserIdx}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -295,7 +436,9 @@ const ChatPage = ({ user, onLogout }) => {
               <div className="text-center py-12">
                 <div className="text-gray-400 text-4xl mb-4">💬</div>
                 <p className="text-gray-500 text-lg">아직 메시지가 없습니다.</p>
-                <p className="text-gray-400 text-sm mt-2">채팅을 시작해보세요!</p>
+                <p className="text-gray-400 text-sm mt-2">
+                  채팅을 시작해보세요!
+                </p>
               </div>
             )}
           </div>
@@ -319,29 +462,243 @@ const ChatPage = ({ user, onLogout }) => {
             </div>
           )}
           {prodLoading ? (
-            <div className="text-center py-12 text-gray-500">목록을 불러오는 중...</div>
+            <div className="text-center py-12 text-gray-500">
+              목록을 불러오는 중...
+            </div>
           ) : (
             <div className="space-y-4">
               {products.map((product) => (
-                <div key={product.productIdx || product.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                  <h3 className="font-semibold text-gray-900">{product.title || product.productName || "제목 없음"}</h3>
+                <div
+                  key={product.productIdx || product.id}
+                  className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
+                >
+                  <h3 className="font-semibold text-gray-900">
+                    {product.title || product.productName || "제목 없음"}
+                  </h3>
                   {product.price && (
-                    <p className="text-sm text-gray-500 mt-1">가격: {product.price}</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      가격: {product.price}
+                    </p>
                   )}
-                  <p className="text-sm text-gray-500 mt-1">판매자: {product.sellerName || product.writerName || product.userName}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    판매자:{" "}
+                    {product.sellerName ||
+                      product.writerName ||
+                      product.userName}
+                  </p>
                   {product.content && (
-                    <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">{product.content}</p>
+                    <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">
+                      {product.content}
+                    </p>
                   )}
                 </div>
               ))}
             </div>
           )}
           {products.length === 0 && !prodLoading && !prodError && (
-            <div className="text-center py-12 text-gray-500">게시글이 없습니다.</div>
+            <div className="text-center py-12 text-gray-500">
+              게시글이 없습니다.
+            </div>
           )}
+        </div>
+      )}
+
+      {/* 상품 등록 모달 */}
+      {showRegisterModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  새 상품 등록
+                </h2>
+                <button
+                  onClick={() => setShowRegisterModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                  disabled={registering}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    상품명 *
+                  </label>
+                  <input
+                    type="text"
+                    value={productForm.productTitle}
+                    onChange={(e) =>
+                      setProductForm((prev) => ({
+                        ...prev,
+                        productTitle: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="상품명을 입력하세요"
+                    disabled={registering}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    상품 설명 *
+                  </label>
+                  <textarea
+                    value={productForm.productDesc}
+                    onChange={(e) =>
+                      setProductForm((prev) => ({
+                        ...prev,
+                        productDesc: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="상품 설명을 입력하세요"
+                    rows={3}
+                    disabled={registering}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    가격
+                  </label>
+                  <input
+                    type="number"
+                    value={productForm.productPrice}
+                    onChange={(e) =>
+                      setProductForm((prev) => ({
+                        ...prev,
+                        productPrice: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="가격을 입력하세요"
+                    disabled={registering}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    카테고리 *
+                  </label>
+                  <select
+                    value={productForm.category}
+                    onChange={(e) =>
+                      setProductForm((prev) => ({
+                        ...prev,
+                        category: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={registering}
+                  >
+                    <option value="">카테고리를 선택하세요</option>
+                    <option value="전자제품">전자제품</option>
+                    <option value="의류">의류</option>
+                    <option value="가구">가구</option>
+                    <option value="도서">도서</option>
+                    <option value="기타">기타</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    수량
+                  </label>
+                  <input
+                    type="number"
+                    value={productForm.productQuantity}
+                    onChange={(e) =>
+                      setProductForm((prev) => ({
+                        ...prev,
+                        productQuantity: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="1"
+                    disabled={registering}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    태그
+                  </label>
+                  <input
+                    type="text"
+                    onKeyDown={handleTagInput}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="태그를 입력하고 Enter를 누르세요"
+                    disabled={registering}
+                  />
+                  {productForm.tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {productForm.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm flex items-center"
+                        >
+                          {tag}
+                          <button
+                            onClick={() => removeTag(tag)}
+                            className="ml-1 text-blue-600 hover:text-blue-800"
+                            type="button"
+                            disabled={registering}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    상품 상태
+                  </label>
+                  <select
+                    value={productForm.productStatus}
+                    onChange={(e) =>
+                      setProductForm((prev) => ({
+                        ...prev,
+                        productStatus: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={registering}
+                  >
+                    <option value="AVAILABLE">판매중</option>
+                    <option value="SOLD_OUT">품절</option>
+                    <option value="DISCONTINUED">단종</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => setShowRegisterModal(false)}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                  disabled={registering}
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleProductRegister}
+                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:bg-blue-300"
+                  disabled={registering}
+                >
+                  {registering ? "등록 중..." : "등록"}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
 };
+
 export default ChatPage;
