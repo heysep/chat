@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 // 로그인 화면
-const LoginPage = ({ onLoginSuccess, onNavigateToRegister }) => {
+const LoginPage = ({ onLoginSuccess }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     userId: "",
     userPw: "",
@@ -53,8 +55,14 @@ const LoginPage = ({ onLoginSuccess, onNavigateToRegister }) => {
       }
 
       // 로그인 성공 - 상위 컴포넌트에 사용자 정보 전달
-      console.log("로그인 성공:", data);
+      console.log("=== 로그인 성공 ===");
+      console.log("전체 응답 데이터:", data);
+      console.log("data.data:", data.data);
+      console.log("data.data의 키들:", Object.keys(data.data || {}));
+      console.log("사용자 ID (user_idx):", data.data?.user_idx);
+      
       onLoginSuccess(data.data);
+      navigate('/chat');
     } catch (err) {
       console.error("로그인 실패:", err);
       setError(err.message || "로그인에 실패했습니다.");
@@ -162,12 +170,12 @@ const LoginPage = ({ onLoginSuccess, onNavigateToRegister }) => {
               <button className="text-blue-500 hover:text-blue-600 transition-colors">
                 비밀번호 찾기
               </button>
-              <button
-                onClick={onNavigateToRegister}
+              <Link
+                to="/register"
                 className="text-blue-500 hover:text-blue-600 transition-colors"
               >
                 회원가입
-              </button>
+              </Link>
             </div>
           </div>
         </div>

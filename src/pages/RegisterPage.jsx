@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
-const RegisterPage = ({ onRegisterSuccess, onNavigateToLogin }) => {
+const RegisterPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     companyName: "",
     userId: "",
@@ -72,7 +74,8 @@ const RegisterPage = ({ onRegisterSuccess, onNavigateToLogin }) => {
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
-      if (onRegisterSuccess) onRegisterSuccess();
+      alert("회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
+      navigate('/login');
     } catch (err) {
       console.error("회원가입 실패:", err);
       setError(err.message || "회원가입에 실패했습니다.");
@@ -236,7 +239,7 @@ const RegisterPage = ({ onRegisterSuccess, onNavigateToLogin }) => {
 
             <div>
               <label htmlFor="companyTell" className="block text-sm font-medium text-gray-700 mb-2">
-                전화번호
+                회사 전화번호
               </label>
               <input
                 type="text"
@@ -245,7 +248,7 @@ const RegisterPage = ({ onRegisterSuccess, onNavigateToLogin }) => {
                 value={formData.companyTell}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
-                placeholder="전화번호를 입력하세요"
+                placeholder="회사 전화번호를 입력하세요"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                 disabled={loading}
               />
@@ -270,7 +273,7 @@ const RegisterPage = ({ onRegisterSuccess, onNavigateToLogin }) => {
               {loading ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>가입 중...</span>
+                  <span>회원가입 중...</span>
                 </div>
               ) : (
                 "회원가입"
@@ -279,15 +282,34 @@ const RegisterPage = ({ onRegisterSuccess, onNavigateToLogin }) => {
           </div>
 
           <div className="mt-6 pt-6 border-t border-gray-100">
-            <div className="flex justify-between text-sm">
-              <button
-                onClick={onNavigateToLogin}
-                className="text-blue-500 hover:text-blue-600 transition-colors"
+            <div className="text-center">
+              <Link
+                to="/login"
+                className="text-blue-500 hover:text-blue-600 transition-colors text-sm"
               >
-                로그인으로 돌아가기
-              </button>
+                이미 계정이 있으신가요? 로그인
+              </Link>
             </div>
           </div>
+        </div>
+
+        <div className="mt-6 text-center">
+          <div className="bg-white rounded-full shadow-sm px-4 py-2 inline-flex items-center space-x-2">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                error ? "bg-red-400" : "bg-blue-400"
+              } ${loading ? "animate-pulse" : ""}`}
+            ></div>
+            <span className="text-xs text-gray-600">
+              {error ? "API 연결 실패" : "API 준비됨"}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-4 text-center">
+          <p className="text-xs text-gray-400">
+            API: POST {BASE_URL}/users/register
+          </p>
         </div>
       </div>
     </div>
